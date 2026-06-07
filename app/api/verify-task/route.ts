@@ -1,12 +1,42 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "../../lib/supabase";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+async function uploadPhoto(base64Image: string, taskId: string, kidId: string): Promise<string | null> {
+  try {
+    // Convert base64 data URL to binary
+    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "image/jpeg" });
+
+    const fileName = `${kidId}/${taskId}-${Date.now()}.jpg`;
+
+    const { error } = await supabase.storage
+      .from("task-photos")
+      .upload(fileName, blob, { contentType: "image/jpeg", upsert: true });
+
+    if (error) { console.error("Upload error:", error); return null; }
+
+    const { data } = supabase.storage.from("task-photos").getPublicUrl(fileName);
+    console.log("Photo uploaded successfully:", data.publicUrl);
+    return data.publicUrl;
+  } catch (e) {
+    console.error("Upload error:", e);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const { image, link, pastedText, taskTitle, taskType, requiresParentApproval } = await req.json();
+  const { image, link, pastedText, taskTitle, taskDescription, taskType, requiresParentApproval, taskId, kidId } = await req.json();
 
   try {
     const isHomework = taskType === "homework";
@@ -146,17 +176,38 @@ Respond ONLY with this exact JSON:
   "questionsChecked": 5,
   "correctAnswers": 4
 }`
-      : `You are a friendly chore verification assistant for a kids app.
+      : `You are a fair and smart task verification assistant for a kids chore app.
 
 The task is: "${taskTitle}"
+The task description is: "${taskDescription || taskTitle}"
 
-Look at this photo. Be generous — if there is ANY evidence the task was completed, approve it. Only reject if completely unrelated.
+First figure out what TYPE of task this is, then verify accordingly:
+
+TYPE A — Physical chores (make bed, take out trash, clean room, do dishes, vacuum):
+- Need a photo of the RESULT, not a selfie
+- APPROVE if the photo clearly shows the completed task
+- REJECT if it's just a selfie with no evidence of the task
+
+TYPE B — Personal/body tasks (smile, exercise, brush teeth, wash hands, get dressed):
+- A selfie or photo of the person IS the correct evidence
+- APPROVE if the photo shows the person doing or having done the task
+- For "smile" — approve if the person is smiling in the photo
+
+TYPE C — Outdoor tasks (take out trash, mow lawn, walk dog):
+- Need photo showing the outdoor evidence
+- APPROVE if there is reasonable evidence shown
+
+General rules:
+- Give the kid benefit of the doubt on genuine attempts
+- Do NOT reject for minor imperfections
+- REJECT only if the photo is completely unrelated or clearly a joke
+- A blurry but relevant photo should still be approved
 
 Respond ONLY with this exact JSON:
 {
-  "approved": true,
-  "reason": "Brief explanation",
-  "feedback": "Encouraging message"
+  "approved": true or false,
+  "reason": "Specific explanation of what you see in the photo",
+  "feedback": "Encouraging and specific message to the kid"
 }`;
 
     const response = await openai.chat.completions.create({
@@ -186,11 +237,43 @@ Respond ONLY with this exact JSON:
     }
 
     const json = JSON.parse(match[0]);
+
+    // Upload photo to Supabase Storage if taskId and kidId provided
+    let photoUrl = null;
+    if (image && taskId && kidId) {
+      photoUrl = await uploadPhoto(image, taskId, kidId);
+    }
+
+    // Save result to database
+    if (taskId) {
+      // Always set to pending_review when approved so parent can see the photo
+      const newStatus = json.approved ? "pending_review" : "active";
+
+      await supabase.from("tasks").update({
+        status: newStatus,
+        ai_verdict: json.reason,
+        ...(photoUrl && { photo_url: photoUrl }),
+      }).eq("id", taskId);
+
+      // If approved and no parent approval needed, update balance
+      if (json.approved && !requiresParentApproval && kidId) {
+        const { data: task } = await supabase.from("tasks").select("reward").eq("id", taskId).single();
+        if (task) {
+          const { data: kid } = await supabase.from("kids").select("balance, weekly_budget").eq("id", kidId).single();
+          if (kid) {
+            const newBalance = Math.min(kid.balance + task.reward, kid.weekly_budget);
+            await supabase.from("kids").update({ balance: newBalance }).eq("id", kidId);
+          }
+        }
+      }
+    }
+
     if (requiresParentApproval && json.approved) {
       json.pendingParentApproval = true;
       json.reason = "AI approved! Waiting for your parent to confirm.";
     }
 
+    json.photoUrl = photoUrl;
     return NextResponse.json(json);
 
   } catch (error) {

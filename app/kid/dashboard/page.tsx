@@ -1,17 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 type TaskType = "chore" | "homework" | "exercise";
 type TaskStatus = "idle" | "verifying" | "approved" | "rejected" | "pending_parent";
 
-const tasks = [
-  { id: 1, title: "Make your bed", reward: "$1.00", description: "Take a clear photo of your made bed", type: "chore" as TaskType, requiresParentApproval: false },
-  { id: 2, title: "Do homework", reward: "$2.00", description: "Take a photo of your completed homework — AI will check your answers", type: "homework" as TaskType, requiresParentApproval: true },
-  { id: 3, title: "Take out trash", reward: "$1.50", description: "Take a photo of the empty trash can", type: "chore" as TaskType, requiresParentApproval: false },
-  { id: 4, title: "Exercise for 20 mins", reward: "$1.00", description: "Take a photo outside or at the gym showing you exercised", type: "exercise" as TaskType, requiresParentApproval: false },
-];
+type Task = {
+  id: string;
+  title: string;
+  reward: number;
+  description: string;
+  task_type: TaskType;
+  requires_parent_approval: boolean;
+  status: string;
+};
 
 const taskTypeConfig = {
   chore: { icon: "🧹", label: "Chore" },
@@ -19,20 +23,50 @@ const taskTypeConfig = {
   exercise: { icon: "💪", label: "Exercise" },
 };
 
+// Demo kid ID from our setup
+const KID_ID = "3773eeac-6e2c-4d2f-8521-5ba7f16629cf";
+
 export default function KidDashboard() {
-  const [balance, setBalance] = useState(12.50);
-  const [taskStatuses, setTaskStatuses] = useState<Record<number, TaskStatus>>({});
-  const [taskPhotos, setTaskPhotos] = useState<Record<number, string>>({});
-  const [taskFeedback, setTaskFeedback] = useState<Record<number, { reason: string; feedback?: string; questionsChecked?: number; correctAnswers?: number }>>({});
-  const [activeTask, setActiveTask] = useState<number | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [balance, setBalance] = useState(20.00);
+  const [taskStatuses, setTaskStatuses] = useState<Record<string, TaskStatus>>({});
+  const [taskPhotos, setTaskPhotos] = useState<Record<string, string>>({});
+  const [taskFeedback, setTaskFeedback] = useState<Record<string, { reason: string; feedback?: string; questionsChecked?: number; correctAnswers?: number }>>({});
+  const [activeTask, setActiveTask] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
-  const [linkInputs, setLinkInputs] = useState<Record<number, string>>({});
-  const [showLinkInput, setShowLinkInput] = useState<Record<number, boolean>>({});
-  const [pastedText, setPastedText] = useState<Record<number, string>>({});
-  const [showPasteInput, setShowPasteInput] = useState<Record<number, boolean>>({});
-  const [screenshotPreviews, setScreenshotPreviews] = useState<Record<number, string>>({});
-  const [failCounts, setFailCounts] = useState<Record<number, number>>({});
-  const [parentAlerted, setParentAlerted] = useState<Record<number, boolean>>({});
+  const [linkInputs, setLinkInputs] = useState<Record<string, string>>({});
+  const [showLinkInput, setShowLinkInput] = useState<Record<string, boolean>>({});
+  const [pastedText, setPastedText] = useState<Record<string, string>>({});
+  const [showPasteInput, setShowPasteInput] = useState<Record<string, boolean>>({});
+  const [screenshotPreviews, setScreenshotPreviews] = useState<Record<string, string>>({});
+  const [failCounts, setFailCounts] = useState<Record<string, number>>({});
+  const [parentAlerted, setParentAlerted] = useState<Record<string, boolean>>({});
+
+  // Load tasks from database
+  useEffect(() => {
+    async function loadData() {
+      const res = await fetch(`/api/tasks?kidId=${KID_ID}`);
+      const data = await res.json();
+      setTasks(data);
+
+      // Set initial statuses
+      const statuses: Record<string, TaskStatus> = {};
+      data.forEach((t: Task) => {
+        if (t.status === "approved") statuses[t.id] = "approved";
+        else if (t.status === "pending_review") statuses[t.id] = "pending_parent";
+        else statuses[t.id] = "idle";
+      });
+      setTaskStatuses(statuses);
+
+      // Load balance
+      const kidRes = await fetch(`/api/kid?kidId=${KID_ID}`);
+      if (kidRes.ok) {
+        const kidData = await kidRes.json();
+        setBalance(kidData.balance);
+      }
+    }
+    loadData();
+  }, []);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -75,8 +109,11 @@ export default function KidDashboard() {
         body: JSON.stringify({
           image: photo,
           taskTitle: task?.title,
-          taskType: task?.type,
-          requiresParentApproval: task?.requiresParentApproval,
+          taskDescription: task?.description,
+          taskType: task?.task_type,
+          requiresParentApproval: task?.requires_parent_approval,
+          taskId: activeTask,
+          kidId: KID_ID,
         }),
       });
       const data = await res.json();
@@ -86,7 +123,7 @@ export default function KidDashboard() {
         setTaskStatuses((prev) => ({ ...prev, [activeTask]: "pending_parent" }));
       } else if (data.approved) {
         setTaskStatuses((prev) => ({ ...prev, [activeTask]: "approved" }));
-        const reward = parseFloat(task?.reward.replace("$", "") ?? "0");
+        const reward = typeof task?.reward === "number" ? task.reward : parseFloat(String(task?.reward ?? "0"));
         setBalance((prev) => prev + reward);
       } else {
         setTaskStatuses((prev) => ({ ...prev, [activeTask]: "rejected" }));
@@ -112,8 +149,9 @@ export default function KidDashboard() {
         body: JSON.stringify({
           link,
           taskTitle: task?.title,
-          taskType: task?.type,
-          requiresParentApproval: task?.requiresParentApproval,
+          taskDescription: task?.description,
+          taskType: task?.task_type,
+          requiresParentApproval: task?.requires_parent_approval,
         }),
       });
       const data = await res.json();
@@ -123,7 +161,7 @@ export default function KidDashboard() {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "pending_parent" }));
       } else if (data.approved) {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "approved" }));
-        const reward = parseFloat(task?.reward.replace("$", "") ?? "0");
+        const reward = typeof task?.reward === "number" ? task.reward : parseFloat(String(task?.reward ?? "0"));
         setBalance((prev) => prev + reward);
       } else {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "rejected" }));
@@ -166,8 +204,9 @@ export default function KidDashboard() {
           body: JSON.stringify({
             image,
             taskTitle: task?.title,
-            taskType: task?.type,
-            requiresParentApproval: task?.requiresParentApproval,
+          taskDescription: task?.description,
+            taskType: task?.task_type,
+            requiresParentApproval: task?.requires_parent_approval,
           }),
         });
         const data = await res.json();
@@ -177,7 +216,7 @@ export default function KidDashboard() {
           setTaskStatuses((prev) => ({ ...prev, [taskId]: "pending_parent" }));
         } else if (data.approved) {
           setTaskStatuses((prev) => ({ ...prev, [taskId]: "approved" }));
-          const reward = parseFloat(task?.reward.replace("$", "") ?? "0");
+          const reward = typeof task?.reward === "number" ? task.reward : parseFloat(String(task?.reward ?? "0"));
           setBalance((prev) => prev + reward);
         } else {
           setTaskStatuses((prev) => ({ ...prev, [taskId]: "rejected" }));
@@ -190,7 +229,7 @@ export default function KidDashboard() {
     reader.readAsDataURL(file);
   }
 
-  async function submitPastedText(taskId: number) {
+  async function submitPastedText(taskId: string) {
     const text = pastedText[taskId];
     if (!text) return;
     const task = tasks.find((t) => t.id === taskId);
@@ -204,8 +243,11 @@ export default function KidDashboard() {
         body: JSON.stringify({
           pastedText: text,
           taskTitle: task?.title,
-          taskType: task?.type,
-          requiresParentApproval: task?.requiresParentApproval,
+          taskDescription: task?.description,
+          taskType: task?.task_type,
+          requiresParentApproval: task?.requires_parent_approval,
+          taskId,
+          kidId: KID_ID,
         }),
       });
       const data = await res.json();
@@ -215,7 +257,7 @@ export default function KidDashboard() {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "pending_parent" }));
       } else if (data.approved) {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "approved" }));
-        const reward = parseFloat(task?.reward.replace("$", "") ?? "0");
+        const reward = typeof task?.reward === "number" ? task.reward : parseFloat(String(task?.reward ?? "0"));
         setBalance((prev) => prev + reward);
       } else {
         setTaskStatuses((prev) => ({ ...prev, [taskId]: "rejected" }));
@@ -231,264 +273,220 @@ export default function KidDashboard() {
   const percentage = (balance / weeklyBudget) * 100;
 
   return (
-    <main className="min-h-screen bg-[#020817] text-white">
-
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-blue-700 opacity-10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] bg-cyan-700 opacity-10 rounded-full blur-[120px]" />
-      </div>
+    <main className="min-h-screen" style={{ backgroundColor: "#F8F4ED", color: "#1A1A2E" }}>
 
       {/* Camera Modal */}
       {cameraOpen && activeTask && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-6">
-          <div className="bg-[#0a1628] border border-white/10 rounded-3xl p-6 flex flex-col items-center gap-4 w-full max-w-md">
-            <h2 className="text-xl font-black">📸 Take your photo</h2>
-            <p className="text-gray-400 text-sm text-center">{tasks.find((t) => t.id === activeTask)?.description}</p>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+          <div className="rounded-2xl border p-6 flex flex-col items-center gap-4 w-full max-w-md shadow-2xl" style={{ backgroundColor: "#FFFDF9", borderColor: "#E5E7EB" }}>
+            <h2 className="text-xl font-black" style={{ color: "#1B4332" }}>Take your photo</h2>
+            <p className="text-sm text-center" style={{ color: "#6B7280" }}>{tasks.find((t) => t.id === activeTask)?.description}</p>
 
-            {tasks.find((t) => t.id === activeTask)?.type === "homework" && (
-              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-3 w-full text-center">
-                <p className="text-yellow-400 text-sm font-bold">📚 Homework mode — AI will check your answers</p>
-                <p className="text-yellow-300 text-xs mt-1">Make sure all questions AND answers are clearly visible!</p>
+            {tasks.find((t) => t.id === activeTask)?.task_type === "homework" && (
+              <div className="rounded-xl p-3 w-full text-center border" style={{ backgroundColor: "#FFFBEB", borderColor: "#FCD34D" }}>
+                <p className="text-sm font-bold" style={{ color: "#D97706" }}>Homework mode — AI will check your answers</p>
+                <p className="text-xs mt-1" style={{ color: "#D97706" }}>Make sure all questions and answers are clearly visible</p>
               </div>
             )}
 
-            {tasks.find((t) => t.id === activeTask)?.requiresParentApproval && (
-              <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-3 w-full text-center">
-                <p className="text-blue-400 text-sm font-bold">👀 Parent approval also required</p>
-                <p className="text-blue-300 text-xs mt-1">Your parent will get a notification to review this.</p>
+            {tasks.find((t) => t.id === activeTask)?.requires_parent_approval && (
+              <div className="rounded-xl p-3 w-full text-center border" style={{ backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" }}>
+                <p className="text-sm font-bold" style={{ color: "#2563EB" }}>Parent approval also required</p>
+                <p className="text-xs mt-1" style={{ color: "#3B82F6" }}>Your parent will get a notification to review this.</p>
               </div>
             )}
 
-            <video ref={videoRef} autoPlay playsInline className="w-full rounded-2xl" />
+            <video ref={videoRef} autoPlay playsInline className="w-full rounded-xl" />
             <div className="flex gap-3 w-full">
-              <button onClick={closeCamera} className="flex-1 bg-white/10 hover:bg-white/20 transition text-white font-bold py-3 rounded-xl">Cancel</button>
-              <button onClick={captureAndVerify} className="flex-1 bg-blue-600 hover:bg-blue-500 transition text-white font-black py-3 rounded-xl">📸 Submit</button>
+              <button onClick={closeCamera} className="flex-1 font-bold py-3 rounded-xl border text-sm"
+                style={{ borderColor: "#C8B89A", color: "#1B4332" }}>Cancel</button>
+              <button onClick={captureAndVerify} className="flex-1 font-black py-3 rounded-xl text-sm transition hover:opacity-90"
+                style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>Submit Photo</button>
             </div>
           </div>
         </div>
       )}
 
-      <nav className="relative z-10 flex justify-between items-center px-8 py-5 border-b border-white/10">
-        <h1 className="text-xl font-black">Re<span className="text-cyan-400">define</span></h1>
-        <span className="text-gray-400 text-sm">Hey Jake 👋</span>
+      <nav className="border-b px-8 py-4 flex items-center justify-between sticky top-0 z-40" style={{ backgroundColor: "#1B4332", borderColor: "#2D6A4F" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs" style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>R</div>
+          <span className="font-bold text-sm" style={{ color: "#FFFDF9" }}>Redefine</span>
+        </Link>
+        <span className="text-sm font-medium" style={{ color: "#A7C4B5" }}>Hey Jake</span>
       </nav>
 
-      <div className="relative z-10 max-w-lg mx-auto px-6 py-10">
+      <div className="max-w-lg mx-auto px-6 py-8">
 
-        {/* Balance */}
-        <div className="bg-gradient-to-br from-blue-600/30 to-cyan-600/20 border border-blue-500/30 rounded-3xl p-8 mb-6 text-center">
-          <p className="text-gray-300 text-sm mb-2">Your Balance</p>
-          <p className={`text-7xl font-black mb-4 ${balance < 5 ? "text-red-400" : balance < 10 ? "text-yellow-400" : "text-white"}`}>
-            ${balance.toFixed(2)}
+        {/* Balance card */}
+        <div className="rounded-2xl p-6 mb-4 border" style={{ backgroundColor: "#1B4332", borderColor: "#2D6A4F" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#52B788" }}>Your Balance</p>
+          <p className="text-6xl font-black mb-4 tabular-nums" style={{
+            color: balance < 5 ? "#EF5350" : balance < 10 ? "#FF9900" : "#FFFDF9"
+          }}>
+            ${Math.min(balance, weeklyBudget).toFixed(2)}
           </p>
-          <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-            <div className={`h-2 rounded-full transition-all ${balance < 5 ? "bg-red-500" : balance < 10 ? "bg-yellow-500" : "bg-cyan-400"}`} style={{ width: `${Math.min(percentage, 100)}%` }} />
+          <div className="w-full rounded-full h-1.5 mb-2" style={{ backgroundColor: "#2D6A4F" }}>
+            <div className="h-1.5 rounded-full transition-all" style={{
+              width: `${Math.min(percentage, 100)}%`,
+              backgroundColor: balance < 5 ? "#EF5350" : balance < 10 ? "#FF9900" : "#52B788"
+            }} />
           </div>
-          <p className="text-gray-400 text-xs">${balance.toFixed(2)} of ${weeklyBudget.toFixed(2)} weekly budget remaining</p>
+          <p className="text-xs" style={{ color: "#A7C4B5" }}>${balance.toFixed(2)} of ${weeklyBudget.toFixed(2)} weekly budget remaining</p>
         </div>
 
         {/* Live status */}
-        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 mb-8 flex items-center gap-3">
-          <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+        <div className="rounded-2xl p-4 mb-6 border flex items-center gap-3" style={{ backgroundColor: "#FEF2F2", borderColor: "#FECACA" }}>
+          <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: "#EF5350" }} />
           <div>
-            <p className="font-bold text-sm">You&apos;re on TikTok right now</p>
-            <p className="text-gray-400 text-xs">$0.10/min is being deducted</p>
+            <p className="font-bold text-sm" style={{ color: "#DC2626" }}>You are on TikTok right now</p>
+            <p className="text-xs" style={{ color: "#EF5350" }}>$0.10/min is being deducted from your balance</p>
           </div>
         </div>
 
-        <h2 className="text-xl font-black mb-2">💪 Earn your balance back</h2>
-        <p className="text-gray-400 text-sm mb-6">Complete a task and take a photo. AI verifies it instantly.</p>
+        <h2 className="text-xl font-black mb-1" style={{ color: "#1B4332" }}>Earn your balance back</h2>
+        <p className="text-sm mb-6" style={{ color: "#6B7280" }}>Complete a task, take a photo, and AI verifies it instantly.</p>
 
         <div className="flex flex-col gap-4">
           {tasks.map((task) => {
             const status = taskStatuses[task.id] ?? "idle";
             const photo = taskPhotos[task.id];
             const feedback = taskFeedback[task.id];
-            const config = taskTypeConfig[task.type];
+            const config = taskTypeConfig[task.task_type] ?? taskTypeConfig["chore"];
 
             return (
-              <div key={task.id} className={`border rounded-2xl p-5 transition ${
-                status === "approved" ? "bg-green-500/10 border-green-500/30" :
-                status === "pending_parent" ? "bg-blue-500/10 border-blue-500/30" :
-                status === "rejected" ? "bg-red-500/10 border-red-500/30" :
-                status === "verifying" ? "bg-yellow-500/10 border-yellow-500/30" :
-                "bg-white/5 border-white/10"
-              }`}>
+              <div key={task.id} className="border rounded-2xl p-5 transition" style={{
+                backgroundColor: status === "approved" ? "#F0FDF4" : status === "pending_parent" ? "#EFF6FF" : status === "rejected" ? "#FEF2F2" : status === "verifying" ? "#FFFBEB" : "#FFFDF9",
+                borderColor: status === "approved" ? "#86EFAC" : status === "pending_parent" ? "#BFDBFE" : status === "rejected" ? "#FECACA" : status === "verifying" ? "#FCD34D" : "#E5E7EB",
+              }}>
                 <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{config.icon}</span>
-                    <div>
-                      <p className="font-black text-lg">{task.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-gray-400">{config.label}</span>
-                        {task.requiresParentApproval && (
-                          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">👀 Parent approval</span>
-                        )}
-                      </div>
+                  <div>
+                    <p className="font-black text-lg" style={{ color: "#1B4332" }}>{task.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#EBF5EE", color: "#2D6A4F" }}>{config.label}</span>
+                      {task.requires_parent_approval && (
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#EFF6FF", color: "#2563EB" }}>Parent approval</span>
+                      )}
                     </div>
                   </div>
-                  <span className="text-green-400 font-black text-lg">{task.reward}</span>
+                  <span className="font-black text-lg" style={{ color: "#2D6A4F" }}>${task.reward.toFixed(2)}</span>
                 </div>
 
-                <p className="text-gray-400 text-sm mb-3">{task.description}</p>
+                <p className="text-sm mb-3" style={{ color: "#6B7280" }}>{task.description}</p>
 
                 {photo && (
-                  <div className="w-full h-32 relative rounded-xl overflow-hidden mb-3">
+                  <div className="w-full h-32 relative rounded-xl overflow-hidden mb-3 border" style={{ borderColor: "#E5E7EB" }}>
                     <Image src={photo} alt="Task photo" fill className="object-cover" />
                   </div>
                 )}
 
                 {status === "verifying" && (
-                  <div className="flex items-center gap-2 text-yellow-400 text-sm mb-3 bg-yellow-500/10 rounded-xl p-3">
-                    <span className="animate-spin text-lg">⟳</span>
+                  <div className="flex items-center gap-2 text-sm mb-3 rounded-xl p-3 border" style={{ backgroundColor: "#FFFBEB", borderColor: "#FCD34D", color: "#D97706" }}>
+                    <span className="animate-spin">⟳</span>
                     <div>
-                      <p className="font-bold">AI is verifying...</p>
-                      {task.type === "homework" && <p className="text-xs text-yellow-300">Reading and checking your answers...</p>}
+                      <p className="font-bold">AI is verifying your photo...</p>
+                      {task.task_type === "homework" && <p className="text-xs">Reading and checking your answers...</p>}
                     </div>
                   </div>
                 )}
 
                 {status === "approved" && (
-                  <div className="bg-green-500/20 rounded-xl p-4 mb-3 text-center">
-                    <p className="text-green-400 font-black text-lg">✅ AI Approved!</p>
-                    {feedback?.questionsChecked && <p className="text-green-300 text-sm mt-1">{feedback.correctAnswers}/{feedback.questionsChecked} questions correct</p>}
-                    {feedback?.feedback && <p className="text-green-300 text-sm mt-1">{feedback.feedback}</p>}
-                    <p className="text-green-400 font-bold mt-2">{task.reward} added to your balance! 🎉</p>
+                  <div className="rounded-xl p-4 mb-3 text-center border" style={{ backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }}>
+                    <p className="font-black text-lg" style={{ color: "#059669" }}>AI Approved</p>
+                    {feedback?.questionsChecked && <p className="text-sm mt-1" style={{ color: "#16A34A" }}>{feedback.correctAnswers}/{feedback.questionsChecked} questions correct</p>}
+                    {feedback?.feedback && <p className="text-sm mt-1" style={{ color: "#16A34A" }}>{feedback.feedback}</p>}
+                    <p className="font-bold mt-2 text-sm" style={{ color: "#059669" }}>${task.reward.toFixed(2)} added to your balance</p>
                   </div>
                 )}
 
                 {status === "pending_parent" && (
-                  <div className="bg-blue-500/20 rounded-xl p-4 mb-3 text-center">
-                    <p className="text-blue-400 font-black text-lg">✅ AI Approved!</p>
-                    <p className="text-blue-300 text-sm mt-1">Waiting for your parent to confirm...</p>
-                    <div className="flex items-center justify-center gap-2 mt-2">
-                      <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                      <p className="text-blue-400 text-xs">Notification sent to parent</p>
-                    </div>
+                  <div className="rounded-xl p-4 mb-3 text-center border" style={{ backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" }}>
+                    <p className="font-black" style={{ color: "#2563EB" }}>AI Approved — waiting for parent</p>
+                    <p className="text-sm mt-1" style={{ color: "#3B82F6" }}>Your parent received a notification to confirm.</p>
                   </div>
                 )}
 
                 {status === "rejected" && (
-                  <div className="bg-red-500/20 rounded-xl p-4 mb-3">
-                    <p className="text-red-400 font-black text-center">❌ Not verified</p>
-                    {feedback?.feedback && <p className="text-red-300 text-sm text-center mt-1">{feedback.feedback}</p>}
+                  <div className="rounded-xl p-4 mb-3 border" style={{ backgroundColor: "#FEF2F2", borderColor: "#FECACA" }}>
+                    <p className="font-black text-center" style={{ color: "#DC2626" }}>Not verified</p>
+                    {feedback?.feedback && <p className="text-sm text-center mt-1" style={{ color: "#EF5350" }}>{feedback.feedback}</p>}
                     {feedback?.questionsChecked && (
-                      <p className="text-red-300 text-sm text-center mt-1">
-                        {feedback.correctAnswers}/{feedback.questionsChecked} correct — fix the rest and try again!
+                      <p className="text-sm text-center mt-1" style={{ color: "#EF5350" }}>
+                        {feedback.correctAnswers}/{feedback.questionsChecked} correct — fix the rest and try again
                       </p>
                     )}
-
-                    {/* Fail counter */}
-                    <div className="mt-3 pt-3 border-t border-red-500/20">
-                      <div className="flex items-center justify-between">
-                        <p className="text-red-400 text-xs">
-                          Failed attempts: {failCounts[task.id] ?? 0}
-                        </p>
-                        {parentAlerted[task.id] ? (
-                          <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full font-bold">
-                            🔔 Parent notified
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-500">
-                            Parent notified after 2 fails
-                          </span>
-                        )}
-                      </div>
-
-                      {parentAlerted[task.id] && (
-                        <p className="text-orange-300 text-xs mt-2 text-center">
-                          Your parent has been alerted that you are struggling with this task. They may reach out to help you.
-                        </p>
+                    <div className="mt-3 pt-3 border-t flex items-center justify-between" style={{ borderColor: "#FECACA" }}>
+                      <p className="text-xs" style={{ color: "#EF5350" }}>Failed attempts: {failCounts[task.id] ?? 0}</p>
+                      {parentAlerted[task.id] ? (
+                        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: "#FFF7ED", color: "#C2410C" }}>Parent notified</span>
+                      ) : (
+                        <span className="text-xs" style={{ color: "#9CA3AF" }}>Parent notified after 2 fails</span>
                       )}
                     </div>
                   </div>
                 )}
 
                 {/* Link input for homework */}
-                {task.type === "homework" && showLinkInput[task.id] && status !== "approved" && status !== "pending_parent" && (
+                {task.task_type === "homework" && showLinkInput[task.id] && status !== "approved" && status !== "pending_parent" && (
                   <div className="mb-3">
-                    <p className="text-gray-400 text-xs mb-2">Paste your Google Doc, Google Classroom, or any homework link:</p>
-                    <input
-                      type="url"
-                      placeholder="https://docs.google.com/..."
+                    <p className="text-xs mb-2" style={{ color: "#6B7280" }}>Paste your Google Doc or homework link:</p>
+                    <input type="url" placeholder="https://docs.google.com/..."
                       value={linkInputs[task.id] ?? ""}
                       onChange={(e) => setLinkInputs((prev) => ({ ...prev, [task.id]: e.target.value }))}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-2"
-                    />
+                      className="w-full border rounded-xl px-4 py-3 text-sm mb-2 focus:outline-none"
+                      style={{ borderColor: "#D1D5DB", backgroundColor: "#FFFFFF", color: "#1A1A2E" }} />
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowLinkInput((prev) => ({ ...prev, [task.id]: false }))}
-                        className="flex-1 bg-white/10 hover:bg-white/20 transition text-white font-bold py-2 rounded-xl text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => submitLink(task.id)}
-                        disabled={!linkInputs[task.id]}
-                        className="flex-1 bg-blue-600 hover:bg-blue-500 transition text-white font-bold py-2 rounded-xl text-sm disabled:opacity-40"
-                      >
-                        🔗 Submit Link
-                      </button>
+                      <button onClick={() => setShowLinkInput((prev) => ({ ...prev, [task.id]: false }))}
+                        className="flex-1 font-bold py-2 rounded-xl border text-sm"
+                        style={{ borderColor: "#C8B89A", color: "#1B4332" }}>Cancel</button>
+                      <button onClick={() => submitLink(task.id)} disabled={!linkInputs[task.id]}
+                        className="flex-1 font-bold py-2 rounded-xl text-sm disabled:opacity-40"
+                        style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>Submit Link</button>
                     </div>
                   </div>
                 )}
 
                 {/* Paste text input for homework */}
-                {task.type === "homework" && showPasteInput[task.id] && status !== "approved" && status !== "pending_parent" && (
+                {task.task_type === "homework" && showPasteInput[task.id] && status !== "approved" && status !== "pending_parent" && (
                   <div className="mb-3">
-                    <p className="text-gray-400 text-xs mb-2">Paste your homework text below — copy it from Google Docs, Word, or anywhere:</p>
-                    <textarea
-                      rows={8}
-                      placeholder="Paste your homework here...&#10;&#10;Example:&#10;1. What is 12 × 8?&#10;Answer: 96&#10;&#10;2. Solve for x: 2x + 4 = 12&#10;Answer: x = 4"
+                    <p className="text-xs mb-2" style={{ color: "#6B7280" }}>Paste your homework text — copy from Google Docs, Word, or anywhere:</p>
+                    <textarea rows={8}
+                      placeholder={"Paste your homework here...\n\n1. What is 12 × 8?\nAnswer: 96"}
                       value={pastedText[task.id] ?? ""}
                       onChange={(e) => setPastedText((prev) => ({ ...prev, [task.id]: e.target.value }))}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-2 resize-none"
-                    />
+                      className="w-full border rounded-xl px-4 py-3 text-sm mb-2 resize-none focus:outline-none"
+                      style={{ borderColor: "#D1D5DB", backgroundColor: "#FFFFFF", color: "#1A1A2E" }} />
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowPasteInput((prev) => ({ ...prev, [task.id]: false }))}
-                        className="flex-1 bg-white/10 hover:bg-white/20 transition text-white font-bold py-2 rounded-xl text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => submitPastedText(task.id)}
-                        disabled={!pastedText[task.id]}
-                        className="flex-1 bg-blue-600 hover:bg-blue-500 transition text-white font-bold py-2 rounded-xl text-sm disabled:opacity-40"
-                      >
-                        📝 Submit Homework
-                      </button>
+                      <button onClick={() => setShowPasteInput((prev) => ({ ...prev, [task.id]: false }))}
+                        className="flex-1 font-bold py-2 rounded-xl border text-sm"
+                        style={{ borderColor: "#C8B89A", color: "#1B4332" }}>Cancel</button>
+                      <button onClick={() => submitPastedText(task.id)} disabled={!pastedText[task.id]}
+                        className="flex-1 font-bold py-2 rounded-xl text-sm disabled:opacity-40"
+                        style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>Submit Homework</button>
                     </div>
                   </div>
                 )}
 
                 {status !== "approved" && status !== "pending_parent" && !showLinkInput[task.id] && !showPasteInput[task.id] && (
                   <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => openCamera(task.id)}
-                      disabled={status === "verifying"}
-                      className="w-full font-bold py-3 rounded-xl transition bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-40"
-                    >
-                      {status === "idle" ? "📸 Take Photo to Complete" : status === "verifying" ? "⟳ Verifying..." : "📸 Try Again with Photo"}
+                    <button onClick={() => openCamera(task.id)} disabled={status === "verifying"}
+                      className="w-full font-bold py-3 rounded-xl text-sm transition hover:opacity-90 disabled:opacity-40"
+                      style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>
+                      {status === "idle" ? "Take Photo to Complete" : status === "verifying" ? "Verifying..." : "Try Again with Photo"}
                     </button>
-                    {task.type === "homework" && status !== "verifying" && (
+                    {task.task_type === "homework" && status !== "verifying" && (
                       <>
-                        <button
-                          onClick={() => setShowPasteInput((prev) => ({ ...prev, [task.id]: true }))}
-                          className="w-full font-bold py-3 rounded-xl transition bg-white/10 hover:bg-white/20 text-white text-sm"
-                        >
-                          📝 Paste Homework Text Instead
+                        <button onClick={() => setShowPasteInput((prev) => ({ ...prev, [task.id]: true }))}
+                          className="w-full font-bold py-3 rounded-xl border text-sm transition"
+                          style={{ borderColor: "#C8B89A", color: "#1B4332", backgroundColor: "transparent" }}>
+                          Paste Homework Text
                         </button>
                         <label className="w-full cursor-pointer">
-                          <div className="w-full font-bold py-3 rounded-xl transition bg-white/10 hover:bg-white/20 text-white text-sm text-center">
-                            🖼️ Upload a Screenshot
+                          <div className="w-full font-bold py-3 rounded-xl border text-sm text-center transition"
+                            style={{ borderColor: "#C8B89A", color: "#1B4332", backgroundColor: "transparent" }}>
+                            Upload a Screenshot
                           </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleScreenshot(task.id, e)}
-                          />
+                          <input type="file" accept="image/*" className="hidden"
+                            onChange={(e) => handleScreenshot(task.id, e)} />
                         </label>
                       </>
                     )}

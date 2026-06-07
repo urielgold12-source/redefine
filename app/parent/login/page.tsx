@@ -11,14 +11,8 @@ export default function ParentLogin() {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (!form.email || !form.password) {
-      setError("Please enter your email and password.");
-      return;
-    }
-    setLoading(true);
-    setError("");
-
-    // Simulate login for now
+    if (!form.email || !form.password) { setError("Please enter your email and password."); return; }
+    setLoading(true); setError("");
     setTimeout(() => {
       if (form.email === "parent@test.com" && form.password === "password123") {
         router.push("/parent/dashboard");
@@ -30,102 +24,71 @@ export default function ParentLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-[#020817] text-white flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen flex flex-col" style={{ backgroundColor: "#F8F4ED" }}>
+      <nav className="border-b px-8 py-4 flex items-center justify-between" style={{ backgroundColor: "#1B4332", borderColor: "#2D6A4F" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm" style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>R</div>
+          <span className="text-lg font-bold" style={{ color: "#FFFDF9" }}>Redefine</span>
+        </Link>
+        <Link href="/parent/signup" className="text-sm font-medium" style={{ color: "#A7C4B5" }}>No account? Sign up</Link>
+      </nav>
 
-      {/* Background glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-blue-700 opacity-20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] bg-cyan-700 opacity-20 rounded-full blur-[120px]" />
-      </div>
-
-      {/* Logo */}
-      <Link href="/" className="text-2xl font-black tracking-tight mb-3">
-        Re<span className="text-cyan-400">define</span>
-      </Link>
-      <p className="text-gray-400 text-sm mb-10">Parent login</p>
-
-      <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-        <h2 className="text-3xl font-black mb-1">Welcome back 👋</h2>
-        <p className="text-gray-400 text-sm mb-8">Log in to manage your kid's account.</p>
-
-        <div className="flex flex-col gap-4">
-
-          {/* Email */}
-          <div>
-            <label className="text-gray-400 text-sm mb-2 block">Email</label>
-            <input
-              type="email"
-              placeholder="your@email.com"
-              value={form.email}
-              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
-            />
+      <div className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-black mb-2" style={{ color: "#1B4332" }}>Welcome back</h1>
+            <p className="text-base" style={{ color: "#6B7280" }}>Sign in to your parent account</p>
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="text-gray-400 text-sm mb-2 block">Password</label>
-            <input
-              type="password"
-              placeholder="Your password"
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
-            />
-          </div>
+          <div className="rounded-2xl border p-8" style={{ backgroundColor: "#FFFDF9", borderColor: "#E5E7EB" }}>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-sm font-semibold block mb-1.5" style={{ color: "#1B4332" }}>Email address</label>
+                <input type="email" placeholder="your@email.com" value={form.email}
+                  onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                  className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none"
+                  style={{ borderColor: "#D1D5DB", backgroundColor: "#FFFFFF", color: "#1A1A2E" }} />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-sm font-semibold" style={{ color: "#1B4332" }}>Password</label>
+                  <button className="text-xs font-medium" style={{ color: "#2D6A4F" }}>Forgot password?</button>
+                </div>
+                <input type="password" placeholder="Your password" value={form.password}
+                  onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                  className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none"
+                  style={{ borderColor: "#D1D5DB", backgroundColor: "#FFFFFF", color: "#1A1A2E" }} />
+              </div>
 
-          {/* Forgot password */}
-          <div className="text-right">
-            <button className="text-blue-400 text-sm hover:underline">
-              Forgot password?
-            </button>
-          </div>
+              {error && <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>{error}</div>}
 
-          {/* Error */}
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 text-center">
-              <p className="text-red-400 text-sm">{error}</p>
+              <button onClick={handleLogin} disabled={loading || !form.email || !form.password}
+                className="w-full font-black py-3.5 rounded-xl text-sm transition hover:opacity-90 disabled:opacity-40 mt-2"
+                style={{ backgroundColor: "#FF9900", color: "#1B4332" }}>
+                {loading ? "Signing in..." : "Sign In →"}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ backgroundColor: "#E5E7EB" }} />
+                <span className="text-xs" style={{ color: "#9CA3AF" }}>or</span>
+                <div className="flex-1 h-px" style={{ backgroundColor: "#E5E7EB" }} />
+              </div>
+
+              <Link href="/parent/signup" className="block text-center font-semibold py-3 rounded-xl border text-sm"
+                style={{ borderColor: "#C8B89A", color: "#1B4332" }}>Create an account</Link>
             </div>
-          )}
-
-          {/* Login button */}
-          <button
-            onClick={handleLogin}
-            disabled={loading || !form.email || !form.password}
-            className="w-full bg-blue-600 hover:bg-blue-500 transition text-white font-black py-4 rounded-xl text-lg disabled:opacity-40"
-          >
-            {loading ? "Logging in..." : "Log In →"}
-          </button>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-gray-500 text-xs">or</span>
-            <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          {/* Sign up link */}
-          <Link
-            href="/parent/signup"
-            className="w-full bg-white/5 border border-white/10 hover:bg-white/10 transition text-white font-bold py-4 rounded-xl text-center"
-          >
-            Create an account
-          </Link>
+          <div className="mt-4 rounded-xl border px-4 py-3 text-center" style={{ borderColor: "#D1E8D1", backgroundColor: "#EBF5EE" }}>
+            <p className="text-xs font-semibold mb-1" style={{ color: "#2D6A4F" }}>Test credentials</p>
+            <p className="text-xs" style={{ color: "#4A6741" }}>Email: <span className="font-bold">parent@test.com</span> · Password: <span className="font-bold">password123</span></p>
+          </div>
 
+          <p className="text-center text-sm mt-6" style={{ color: "#9CA3AF" }}>
+            Are you a kid? <Link href="/kid/login" className="font-semibold" style={{ color: "#2D6A4F" }}>Sign in here</Link>
+          </p>
         </div>
       </div>
-
-      {/* Test credentials hint */}
-      <div className="mt-6 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center max-w-sm">
-        <p className="text-gray-400 text-xs mb-1">Test credentials:</p>
-        <p className="text-gray-300 text-xs">Email: <span className="text-cyan-400">parent@test.com</span></p>
-        <p className="text-gray-300 text-xs">Password: <span className="text-cyan-400">password123</span></p>
-      </div>
-
-      <Link href="/kid/login" className="text-cyan-400 text-sm mt-4 hover:underline">
-        I'm a kid →
-      </Link>
-
     </main>
   );
 }
