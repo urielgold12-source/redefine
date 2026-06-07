@@ -35,25 +35,25 @@ export default function Home() {
   }, [ticking]);
 
   return (
-    <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
+    <main className="min-h-screen bg-[#050508] text-white overflow-hidden">
 
       {/* Background glow effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-blue-700 opacity-20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] bg-cyan-700 opacity-20 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-blue-500 opacity-10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-purple-700 opacity-20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] bg-pink-700 opacity-20 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-blue-700 opacity-10 rounded-full blur-[100px]" />
       </div>
 
       {/* Nav */}
       <nav className="relative z-10 flex justify-between items-center px-10 py-6">
         <h1 className="text-2xl font-black tracking-tight">
-          Re<span className="text-cyan-400">define</span>
+          Re<span className="text-purple-400">define</span>
         </h1>
         <div className="flex gap-4">
           <Link href="/parent/signup" className="text-gray-400 hover:text-white transition text-sm font-medium">
             For Parents
           </Link>
-          <Link href="/kid/login" className="bg-blue-600 hover:bg-blue-500 transition text-white text-sm font-semibold px-4 py-2 rounded-lg">
+          <Link href="/kid/login" className="bg-purple-600 hover:bg-purple-500 transition text-white text-sm font-semibold px-4 py-2 rounded-lg">
             Get Started
           </Link>
         </div>
@@ -61,15 +61,18 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-24">
+
+        {/* Live demo pill */}
         <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-8 backdrop-blur-sm">
-          <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           <span className="text-sm text-gray-300">Live demo — watch the balance drop</span>
         </div>
 
+        {/* Main heading */}
         <h2 className="text-6xl sm:text-8xl font-black tracking-tight leading-none mb-6">
           Every scroll
           <br />
-          <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
             has a price.
           </span>
         </h2>
@@ -85,7 +88,7 @@ export default function Home() {
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="text-gray-400 text-sm">Currently on</span>
             </div>
-            <span className="text-cyan-400 font-bold text-sm">{apps[currentApp]}</span>
+            <span className="text-purple-400 font-bold text-sm">{apps[currentApp]}</span>
           </div>
 
           <p className="text-gray-500 text-sm mb-1">Jake's balance</p>
@@ -99,13 +102,14 @@ export default function Home() {
           {!ticking && (
             <button
               onClick={() => { setBalance(20.00); setTicking(true); }}
-              className="mt-4 w-full bg-blue-600 hover:bg-blue-500 transition text-white font-bold py-2 rounded-xl text-sm"
+              className="mt-4 w-full bg-purple-600 hover:bg-purple-500 transition text-white font-bold py-2 rounded-xl text-sm"
             >
               Complete a task to unlock →
             </button>
           )}
         </div>
 
+        {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/parent/signup" className="bg-white text-black px-8 py-4 rounded-xl text-lg font-black hover:bg-gray-200 transition">
             I'm a Parent — Get Started
@@ -121,7 +125,7 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto text-center">
           {stats.map((stat, i) => (
             <div key={i}>
-              <p className="text-4xl font-black text-cyan-400 mb-1">{stat.value}</p>
+              <p className="text-4xl font-black text-purple-400 mb-1">{stat.value}</p>
               <p className="text-gray-500 text-sm">{stat.label}</p>
             </div>
           ))}
@@ -131,7 +135,7 @@ export default function Home() {
       {/* How it works */}
       <section className="relative z-10 px-10 py-20 max-w-5xl mx-auto">
         <h3 className="text-4xl font-black text-center mb-12">
-          How it <span className="text-cyan-400">works</span>
+          How it <span className="text-purple-400">works</span>
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
@@ -139,7 +143,7 @@ export default function Home() {
             { emoji: "💸", title: "Balance drops in real time", desc: "Every second your kid scrolls, their balance drops. When it hits zero — social media locks automatically." },
             { emoji: "💪", title: "Earn it back for real", desc: "Complete tasks like chores or homework. AI verifies a photo of the completed task. Balance restored instantly." },
           ].map((item, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-cyan-500/50 transition backdrop-blur-sm">
+            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-purple-500/50 transition backdrop-blur-sm">
               <p className="text-4xl mb-4">{item.emoji}</p>
               <h4 className="text-lg font-bold mb-2">{item.title}</h4>
               <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
@@ -150,9 +154,9 @@ export default function Home() {
 
       {/* Footer CTA */}
       <section className="relative z-10 text-center py-20 px-10">
-        <h3 className="text-5xl font-black mb-4">Ready to <span className="text-cyan-400">Redefine</span> screen time?</h3>
+        <h3 className="text-5xl font-black mb-4">Ready to <span className="text-purple-400">Redefine</span> screen time?</h3>
         <p className="text-gray-400 mb-8">Join thousands of parents taking back control.</p>
-        <Link href="/parent/signup" className="bg-blue-600 hover:bg-blue-500 transition text-white px-10 py-4 rounded-xl text-xl font-black">
+        <Link href="/parent/signup" className="bg-purple-600 hover:bg-purple-500 transition text-white px-10 py-4 rounded-xl text-xl font-black">
           Start Free Today →
         </Link>
       </section>
