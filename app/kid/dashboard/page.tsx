@@ -70,7 +70,7 @@ export default function KidDashboard() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  async function openCamera(taskId: number) {
+  async function openCamera(taskId: string) {
     setActiveTask(taskId);
     setCameraOpen(true);
     try {
