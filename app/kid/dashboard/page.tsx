@@ -135,7 +135,7 @@ export default function KidDashboard() {
     }
   }
 
-  async function submitLink(taskId: number) {
+  async function submitLink(taskId: string) {
     const link = linkInputs[taskId];
     if (!link) return;
     const task = tasks.find((t) => t.id === taskId);
@@ -173,7 +173,7 @@ export default function KidDashboard() {
     }
   }
 
-  function handleRejection(taskId: number, taskTitle: string) {
+  function handleRejection(taskId: string, taskTitle: string) {
     setFailCounts((prev) => {
       const newCount = (prev[taskId] ?? 0) + 1;
       // Alert parent after 2 failed attempts
@@ -186,7 +186,7 @@ export default function KidDashboard() {
     });
   }
 
-  async function handleScreenshot(taskId: number, event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleScreenshot(taskId: string, event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     const task = tasks.find((t) => t.id === taskId);
