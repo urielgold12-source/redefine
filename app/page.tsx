@@ -172,14 +172,14 @@ export default function Home() {
             </div>
             <div className="problem-stats" style={{ flex: "1 1 320px" }}>
               {[
-                { value: "6.5h",   label: "Average teen screen time per day",     color: "#de350b" },
-                { value: "73%",    label: "Of teens feel they&apos;re online too much", color: "#f59e0b" },
-                { value: "$2,400", label: "Lost productivity value per year",       color: "#de350b" },
-                { value: "Week 1", label: "Most kids cut usage dramatically",       color: "#36b37e" },
+                { value: "6.5h",   label: "Average teen screen time per day",       color: "#de350b" },
+                { value: "73%",    label: "Of teens feel they're online too much",   color: "#f59e0b" },
+                { value: "$2,400", label: "Lost productivity value per year",        color: "#de350b" },
+                { value: "Week 1", label: "Most kids cut usage dramatically",        color: "#36b37e" },
               ].map(s => (
-                <div key={s.label} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: "22px 20px", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <p className="font-display" style={{ fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 700, color: s.color, margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1 }}>{s.value}</p>
-                  <p className="font-mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", margin: 0, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.4 }} dangerouslySetInnerHTML={{ __html: s.label }} />
+                <div key={s.label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 16, padding: "28px 24px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <p className="font-display" style={{ fontSize: "clamp(40px, 4vw, 56px)", fontWeight: 700, color: s.color, margin: "0 0 10px", letterSpacing: "-0.03em", lineHeight: 1 }}>{s.value}</p>
+                  <p className="font-display" style={{ fontSize: "clamp(14px, 1.4vw, 17px)", color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.45, fontWeight: 500 }}>{s.label}</p>
                 </div>
               ))}
             </div>
