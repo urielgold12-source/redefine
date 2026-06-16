@@ -213,7 +213,7 @@ export default function Home() {
 
               <div style={{ padding: "16px" }}>
                 {/* Tasks */}
-                <p className="font-display" style={{ fontSize: 13, fontWeight: 600, color: "#42526e", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.04em", fontSize: "11px" }}>Earn money back by completing tasks</p>
+                <p className="font-mono" style={{ fontSize: 11, fontWeight: 600, color: "#42526e", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Earn money back by completing tasks</p>
                 {[
                   { label: "Do homework",       reward: "+$5.00", icon: "menu_book",         color: "#0052cc", bg: "#deebff", done: true  },
                   { label: "Clean your room",   reward: "+$3.00", icon: "cleaning_services", color: "#36b37e", bg: "#e3fcef", done: false },
