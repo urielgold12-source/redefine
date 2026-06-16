@@ -149,40 +149,40 @@ export default function Home() {
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section ref={counterRef} style={{ padding: "80px 0", background: "#051a3e" }}>
+      <section ref={counterRef} style={{ padding: "80px 0", background: "#0a1628" }}>
         <div className="section-wide">
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 64, flexWrap: "wrap", marginBottom: 40 }}>
-            <div style={{ flex: "1 1 340px" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "rgba(222,235,255,0.15)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 20 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#deebff" }}>warning</span>
-                <span className="font-mono" style={{ fontSize: 11, color: "#deebff", textTransform: "uppercase", letterSpacing: "0.08em" }}>The problem</span>
+          {/* Headline */}
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <p className="font-mono" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>The problem</p>
+            <h2 className="font-display" style={{ fontSize: "clamp(30px, 4vw, 50px)", fontWeight: 700, color: "#fff", margin: "0 0 18px", letterSpacing: "-0.025em", lineHeight: 1.15 }}>
+              Screen time is <span style={{ color: "#de350b" }}>out of control</span> —<br/>and nothing works.
+            </h2>
+            <p style={{ fontSize: "clamp(16px, 1.8vw, 19px)", color: "rgba(255,255,255,0.55)", margin: "0 auto", lineHeight: 1.7, maxWidth: 580 }}>
+              Parental controls get bypassed. Screen time limits start fights. Taking away the phone just builds resentment.
+            </p>
+          </div>
+
+          {/* Stats — 4 big cards */}
+          <div className="problem-stats" style={{ marginBottom: 40 }}>
+            {[
+              { value: "6.5h",   label: "Average teen screen time per day",     color: "#ff5c5c", border: "rgba(255,92,92,0.25)"  },
+              { value: "73%",    label: "Of teens feel they spend too much time online", color: "#f59e0b", border: "rgba(245,158,11,0.25)" },
+              { value: "$2,400", label: "In lost productive time every year",    color: "#ff5c5c", border: "rgba(255,92,92,0.25)"  },
+              { value: "Week 1", label: "When most kids cut their usage with Redefine", color: "#36b37e", border: "rgba(54,179,126,0.3)" },
+            ].map(s => (
+              <div key={s.value} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 18, padding: "32px 28px", border: `1px solid ${s.border}` }}>
+                <p className="font-display" style={{ fontSize: "clamp(44px, 5vw, 64px)", fontWeight: 700, color: s.color, margin: "0 0 12px", letterSpacing: "-0.03em", lineHeight: 1 }}>{s.value}</p>
+                <p style={{ fontSize: "clamp(15px, 1.5vw, 18px)", color: "rgba(255,255,255,0.75)", margin: 0, lineHeight: 1.5, fontWeight: 400 }}>{s.label}</p>
               </div>
-              <h2 className="font-display section-heading" style={{ color: "#fff", margin: "0 0 20px" }}>
-                Screen time is <span style={{ color: "#de350b" }}>out of control</span> — and nothing works.
-              </h2>
-              <p style={{ fontSize: 18, color: "rgba(255,255,255,0.6)", margin: "0 0 24px", lineHeight: 1.7 }}>
-                Parental controls get bypassed. Screen time limits start fights. Taking away the phone builds resentment. Redefine gives kids a reason to put it down — on their own.
-              </p>
-              <div style={{ background: "rgba(54,179,126,0.1)", borderRadius: 14, padding: "16px 20px", border: "1px solid rgba(54,179,126,0.25)", display: "flex", gap: 12, alignItems: "center" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#36b37e", flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.6 }}>
-                  <strong style={{ color: "#36b37e" }}>Redefine is different</strong> — kids willingly put the phone down because they understand the cost. No fights. No resentment.
-                </p>
-              </div>
-            </div>
-            <div className="problem-stats" style={{ flex: "1 1 320px" }}>
-              {[
-                { value: "6.5h",   label: "Average teen screen time per day",       color: "#de350b" },
-                { value: "73%",    label: "Of teens feel they're online too much",   color: "#f59e0b" },
-                { value: "$2,400", label: "Lost productivity value per year",        color: "#de350b" },
-                { value: "Week 1", label: "Most kids cut usage dramatically",        color: "#36b37e" },
-              ].map(s => (
-                <div key={s.label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 16, padding: "28px 24px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <p className="font-display" style={{ fontSize: "clamp(40px, 4vw, 56px)", fontWeight: 700, color: s.color, margin: "0 0 10px", letterSpacing: "-0.03em", lineHeight: 1 }}>{s.value}</p>
-                  <p className="font-display" style={{ fontSize: "clamp(14px, 1.4vw, 17px)", color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.45, fontWeight: 500 }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
+            ))}
+          </div>
+
+          {/* Green callout */}
+          <div style={{ background: "rgba(54,179,126,0.1)", borderRadius: 16, padding: "22px 28px", border: "1px solid rgba(54,179,126,0.3)", display: "flex", gap: 14, alignItems: "center", maxWidth: 700, margin: "0 auto" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 26, color: "#36b37e", flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            <p style={{ fontSize: "clamp(15px, 1.5vw, 18px)", color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.6 }}>
+              <strong style={{ color: "#36b37e" }}>Redefine is different.</strong> Kids willingly put the phone down because they understand it costs them money. No fights. No resentment.
+            </p>
           </div>
         </div>
       </section>
@@ -190,102 +190,77 @@ export default function Home() {
       {/* ── DASHBOARD PREVIEW ── */}
       <section style={{ padding: "80px 0" }}>
         <div className="section-wide">
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <div style={{ textAlign: "center", marginBottom: 52 }}>
             <p className="font-mono" style={{ fontSize: 12, color: "#42526e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>What your kid sees</p>
-            <h2 className="font-display section-heading" style={{ margin: "0 0 16px" }}>A live dashboard they actually care about</h2>
-            <p className="section-subheading">Every task they complete adds money. Every minute scrolling drains it. They watch it happen in real time.</p>
+            <h2 className="font-display section-heading" style={{ margin: "0 0 16px" }}>Simple. Immediate. They get it instantly.</h2>
+            <p className="section-subheading">One number tells the whole story — their balance. Do tasks, it goes up. Scroll TikTok, it goes down.</p>
           </div>
 
-          <div style={{ maxWidth: 580, margin: "0 auto", background: "#fff", borderRadius: 24, border: "1px solid rgba(0,82,204,0.12)", boxShadow: "0 16px 64px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f1f3ff" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#deebff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span className="font-display" style={{ fontSize: 15, fontWeight: 700, color: "#0052cc" }}>J</span>
-                </div>
-                <span className="font-display" style={{ fontSize: 16, fontWeight: 700, color: "#0052cc" }}>Jake&apos;s Balance</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ padding: "4px 12px", borderRadius: 999, background: "#ffebe6", display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#de350b" }} />
-                  <span className="font-mono" style={{ fontSize: 10, color: "#de350b", textTransform: "uppercase", letterSpacing: "0.06em" }}>Draining</span>
-                </div>
-                <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#42526e" }}>notifications</span>
-              </div>
-            </div>
-            <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ background: "#deebff", borderRadius: 14, padding: 20, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(0,82,204,0.15)", filter: "blur(30px)", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 999, background: "#0052cc", marginBottom: 12 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: "#fff" }}>auto_awesome</span>
-                    <span className="font-mono" style={{ fontSize: 10, color: "#fff", textTransform: "uppercase", letterSpacing: "0.08em" }}>AI Prediction</span>
-                  </div>
-                  <p className="font-display" style={{ fontSize: 24, fontWeight: 700, color: "#0052cc", margin: "0 0 5px", letterSpacing: "-0.02em" }}>Balance forecast +$5.00</p>
-                  <p style={{ fontSize: 14, color: "#42526e", margin: 0 }}>Jake&apos;s homework was just verified by Gemini. His balance is growing.</p>
+          {/* Two-column: phone mockup left, callouts right */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center", maxWidth: 960, margin: "0 auto" }}>
+
+            {/* Phone card */}
+            <div style={{ background: "#fff", borderRadius: 28, border: "1px solid #dfe1e6", boxShadow: "0 20px 60px rgba(0,0,0,0.1)", overflow: "hidden", maxWidth: 340, margin: "0 auto", width: "100%" }}>
+              {/* Status bar */}
+              <div style={{ background: "#0052cc", padding: "14px 20px 16px", textAlign: "center" }}>
+                <p className="font-display" style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", margin: "0 0 4px", letterSpacing: "0.01em" }}>Jake&apos;s Weekly Balance</p>
+                <p className="font-display" style={{ fontSize: 56, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.03em", lineHeight: 1 }}>$7.40</p>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 999, background: "rgba(255,255,255,0.15)" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ff6b6b" }} />
+                  <span style={{ fontSize: 12, color: "#fff", fontWeight: 500 }}>Draining on TikTok · $0.10/min</span>
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #dfe1e6" }}>
-                  <p className="font-mono" style={{ fontSize: 9, color: "#42526e", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Current Balance</p>
-                  <p className="font-display" style={{ fontSize: 32, fontWeight: 700, color: "#0052cc", margin: "0 0 4px", letterSpacing: "-0.02em", lineHeight: 1 }}>$7.40</p>
-                  <p className="font-mono" style={{ fontSize: 11, color: "#36b37e" }}>+$5.00 today</p>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #dfe1e6" }}>
-                  <p className="font-mono" style={{ fontSize: 9, color: "#42526e", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Screen Time Left</p>
-                  <p className="font-display" style={{ fontSize: 32, fontWeight: 700, color: "#172b4d", margin: "0 0 4px", letterSpacing: "-0.02em", lineHeight: 1 }}>74 min</p>
-                  <p className="font-mono" style={{ fontSize: 11, color: "#de350b" }}>-$0.10/min</p>
-                </div>
-              </div>
-              <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #dfe1e6" }}>
-                <p className="font-display" style={{ fontSize: 14, fontWeight: 600, color: "#172b4d", margin: "0 0 12px" }}>Balance This Week</p>
-                <svg viewBox="0 0 340 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0052cc" stopOpacity="0.16" />
-                      <stop offset="100%" stopColor="#0052cc" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id="greenGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#36b37e" stopOpacity="0.12" />
-                      <stop offset="100%" stopColor="#36b37e" stopOpacity="0" />
-                    </linearGradient>
-                    <filter id="softGlow">
-                      <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                      <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                    </filter>
-                  </defs>
-                  {[20, 50, 80].map(y => <line key={y} x1="0" y1={y} x2="340" y2={y} stroke="#f1f3ff" strokeWidth="1" />)}
-                  <path d="M 0,80 C 20,78 36,74 57,62 C 75,52 85,14 114,10 C 140,6 152,22 171,30 C 195,40 210,28 228,20 C 246,14 258,34 285,44 L 285,98 L 0,98 Z" fill="url(#blueGrad)" />
-                  <path d="M 0,80 C 20,78 36,74 57,62 C 75,52 85,14 114,10 C 140,6 152,22 171,30 C 195,40 210,28 228,20 C 246,14 258,34 285,44" fill="none" stroke="#0052cc" strokeWidth="2.5" strokeLinecap="round" filter="url(#softGlow)" />
-                  <path d="M 285,44 C 300,38 315,32 340,28" fill="none" stroke="#36b37e" strokeWidth="2" strokeDasharray="5,4" strokeLinecap="round" />
-                  <path d="M 285,44 C 300,38 315,32 340,28 L 340,98 L 285,98 Z" fill="url(#greenGrad2)" />
-                  <circle cx="114" cy="10" r="4" fill="#0052cc" />
-                  <circle cx="114" cy="10" r="9" fill="rgba(0,82,204,0.13)" />
-                </svg>
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-                  {["MON","TUE","WED","THU","FRI","SAT","SUN"].map(d => (
-                    <span key={d} className="font-mono" style={{ fontSize: 8, color: "#42526e", textTransform: "uppercase" }}>{d}</span>
-                  ))}
-                </div>
-              </div>
-              <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #dfe1e6" }}>
-                <p className="font-display" style={{ fontSize: 14, fontWeight: 600, color: "#172b4d", margin: "0 0 12px" }}>Tasks This Week</p>
+
+              <div style={{ padding: "16px" }}>
+                {/* Tasks */}
+                <p className="font-display" style={{ fontSize: 13, fontWeight: 600, color: "#42526e", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.04em", fontSize: "11px" }}>Earn money back by completing tasks</p>
                 {[
-                  { label: "Homework", pct: 94, color: "#0052cc", bg: "#deebff" },
-                  { label: "Chores",   pct: 82, color: "#36b37e", bg: "#e3fcef" },
-                  { label: "Exercise", pct: 76, color: "#6554c0", bg: "#f0ecff" },
-                ].map(row => (
-                  <div key={row.label} style={{ marginBottom: 10 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span className="font-mono" style={{ fontSize: 9, color: "#42526e", textTransform: "uppercase", letterSpacing: "0.08em" }}>{row.label}</span>
-                      <span className="font-mono" style={{ fontSize: 10, color: "#172b4d", fontWeight: 700 }}>{row.pct}%</span>
+                  { label: "Do homework",       reward: "+$5.00", icon: "menu_book",         color: "#0052cc", bg: "#deebff", done: true  },
+                  { label: "Clean your room",   reward: "+$3.00", icon: "cleaning_services", color: "#36b37e", bg: "#e3fcef", done: false },
+                  { label: "30 min exercise",   reward: "+$2.00", icon: "fitness_center",    color: "#6554c0", bg: "#f0ecff", done: false },
+                ].map(task => (
+                  <div key={task.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 12, background: task.done ? "#f6fff9" : "#fafbff", border: `1px solid ${task.done ? "#b3f5d1" : "#eef0f8"}`, marginBottom: 8 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: task.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: task.color }}>{task.icon}</span>
                     </div>
-                    <div style={{ height: 6, background: row.bg, borderRadius: 999, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${row.pct}%`, background: row.color, borderRadius: 999 }} />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#172b4d", margin: 0 }}>{task.label}</p>
+                      <p style={{ fontSize: 13, color: task.color, margin: 0, fontWeight: 600 }}>{task.reward}</p>
                     </div>
+                    {task.done
+                      ? <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#36b37e", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                      : <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#dfe1e6" }}>radio_button_unchecked</span>
+                    }
                   </div>
                 ))}
+
+                {/* AI verified banner */}
+                <div style={{ background: "#e3fcef", borderRadius: 10, padding: "10px 14px", display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 17, color: "#36b37e", fontVariationSettings: "'FILL' 1", flexShrink: 0 }}>auto_awesome</span>
+                  <p style={{ fontSize: 12, color: "#006644", margin: 0, fontWeight: 500 }}>Homework verified by AI — <strong>+$5.00 added!</strong></p>
+                </div>
               </div>
             </div>
+
+            {/* Right: plain-English callouts */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {[
+                { icon: "trending_down", color: "#de350b", bg: "#ffebe6", title: "Every scroll costs money", body: "The moment Jake opens TikTok, his $7.40 starts dropping at $0.10 a minute. He can see it happening live. That's the whole point." },
+                { icon: "assignment_turned_in", color: "#36b37e", bg: "#e3fcef", title: "Tasks earn it back", body: "Jake takes a photo of his finished homework. The AI checks it in seconds and adds $5.00 back to his balance. No arguing with mom — the AI decides." },
+                { icon: "lock", color: "#0052cc", bg: "#deebff", title: "Zero balance = no social media", body: "When his balance hits $0, TikTok is locked until he earns more. The rule enforces itself — you don't have to say a word." },
+              ].map(c => (
+                <div key={c.title} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 24, color: c.color, fontVariationSettings: "'FILL' 1" }}>{c.icon}</span>
+                  </div>
+                  <div>
+                    <p className="font-display" style={{ fontSize: 18, fontWeight: 700, color: "#172b4d", margin: "0 0 6px", letterSpacing: "-0.01em" }}>{c.title}</p>
+                    <p style={{ fontSize: 15, color: "#42526e", margin: 0, lineHeight: 1.65 }}>{c.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </section>
