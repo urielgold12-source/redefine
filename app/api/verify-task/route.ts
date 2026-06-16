@@ -1,10 +1,31 @@
 import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "../../lib/supabase";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY ?? "");
+
+async function verifyWithGemini(prompt: string, image?: string, pastedText?: string, link?: string): Promise<{ approved: boolean; reason: string; feedback: string; questionsChecked?: number; correctAnswers?: number }> {
+  const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  let parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [{ text: prompt }];
+
+  if (image) {
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Data } }];
+  }
+
+  const result = await model.generateContent(parts);
+  const text = result.response.text();
+  console.log("Gemini response:", text);
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return { approved: false, reason: "Could not read homework. Try a clearer photo.", feedback: "Retake in better lighting or submit a link instead." };
+  return JSON.parse(match[0]);
+}
 
 async function uploadPhoto(base64Image: string, taskId: string, kidId: string): Promise<string | null> {
   try {
@@ -43,12 +64,7 @@ export async function POST(req: NextRequest) {
 
     // If pasted text was submitted
     if (pastedText) {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: `You are a strict homework verification assistant.
+      const prompt = `You are a strict homework verification assistant.
 
 A student pasted their homework text for the task: "${taskTitle}"
 
@@ -72,22 +88,13 @@ Respond ONLY with this exact JSON:
   "feedback": "Specific feedback — which questions were right, which were wrong",
   "questionsChecked": 8,
   "correctAnswers": 7
-}`,
-          },
-        ],
-        max_tokens: 400,
-      });
+}`;
 
-      const text = response.choices[0].message.content ?? "";
-      console.log("Pasted text verify response:", text);
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) return NextResponse.json({ approved: false, reason: "Could not read homework.", feedback: "Try again." });
-      const json = JSON.parse(match[0]);
-      if (requiresParentApproval && json.approved) {
-        json.pendingParentApproval = true;
-        json.reason = "AI approved! Waiting for your parent to confirm.";
-      }
-      return NextResponse.json(json);
+      const json = await verifyWithGemini(prompt);
+      return NextResponse.json({
+        ...json,
+        ...(requiresParentApproval && json.approved ? { pendingParentApproval: true, reason: "AI approved! Waiting for your parent to confirm." } : {}),
+      });
     }
 
     // If a link was submitted instead of a photo
@@ -107,12 +114,7 @@ Respond ONLY with this exact JSON:
         });
       }
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: `You are a strict homework verification assistant.
+      const linkPrompt = `You are a strict homework verification assistant.
 
 A student submitted a link to their digital homework for the task: "${taskTitle}"
 
@@ -136,22 +138,13 @@ Respond ONLY with this exact JSON, no other text:
   "feedback": "Specific feedback for the kid",
   "questionsChecked": 5,
   "correctAnswers": 4
-}`,
-          },
-        ],
-        max_tokens: 400,
-      });
+}`;
 
-      const text = response.choices[0].message.content ?? "";
-      console.log("Link verify response:", text);
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) return NextResponse.json({ approved: false, reason: "Could not read the document.", feedback: "Try sharing the link again or take a photo instead." });
-      const json = JSON.parse(match[0]);
-      if (requiresParentApproval && json.approved) {
-        json.pendingParentApproval = true;
-        json.reason = "AI approved! Waiting for your parent to confirm.";
-      }
-      return NextResponse.json(json);
+      const json = await verifyWithGemini(linkPrompt);
+      return NextResponse.json({
+        ...json,
+        ...(requiresParentApproval && json.approved ? { pendingParentApproval: true, reason: "AI approved! Waiting for your parent to confirm." } : {}),
+      });
     }
 
     // Photo verification
@@ -210,33 +203,41 @@ Respond ONLY with this exact JSON:
   "feedback": "Encouraging and specific message to the kid"
 }`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: image } },
-          ],
-        },
-      ],
-      max_tokens: 400,
-    });
+    let json: { approved: boolean; reason: string; feedback: string; questionsChecked?: number; correctAnswers?: number };
 
-    const text = response.choices[0].message.content ?? "";
-    console.log("Photo verify response:", text);
-    const match = text.match(/\{[\s\S]*\}/);
-
-    if (!match) {
-      return NextResponse.json({
-        approved: !isHomework,
-        reason: isHomework ? "Could not read homework. Try a clearer photo." : "AI Approved!",
-        feedback: isHomework ? "Retake in better lighting or submit a link instead." : "Great job!",
+    if (isHomework) {
+      // Use Gemini for homework — better at reading text in photos
+      json = await verifyWithGemini(prompt, image);
+    } else {
+      // Use GPT-4o for chores/exercise — better at understanding scenes
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: image } },
+            ],
+          },
+        ],
+        max_tokens: 400,
       });
-    }
 
-    const json = JSON.parse(match[0]);
+      const text = response.choices[0].message.content ?? "";
+      console.log("Photo verify response:", text);
+      const match = text.match(/\{[\s\S]*\}/);
+
+      if (!match) {
+        return NextResponse.json({
+          approved: true,
+          reason: "AI Approved!",
+          feedback: "Great job!",
+        });
+      }
+
+      json = JSON.parse(match[0]);
+    }
 
     // Upload photo to Supabase Storage if taskId and kidId provided
     let photoUrl = null;
@@ -268,13 +269,11 @@ Respond ONLY with this exact JSON:
       }
     }
 
-    if (requiresParentApproval && json.approved) {
-      json.pendingParentApproval = true;
-      json.reason = "AI approved! Waiting for your parent to confirm.";
-    }
-
-    json.photoUrl = photoUrl;
-    return NextResponse.json(json);
+    return NextResponse.json({
+      ...json,
+      photoUrl,
+      ...(requiresParentApproval && json.approved ? { pendingParentApproval: true, reason: "AI approved! Waiting for your parent to confirm." } : {}),
+    });
 
   } catch (error) {
     console.error("Verification error:", error);
