@@ -3,448 +3,173 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const HG = { fontFamily: "'Hanken Grotesk', sans-serif" };
-const Mono = { fontFamily: "'JetBrains Mono', monospace" };
-
-const apps = ["Instagram", "TikTok", "Snapchat", "YouTube", "Twitter"];
-
-const features = [
-  { icon: "auto_awesome",        title: "AI Task Verification",     desc: "Kids submit a photo of their completed task. Gemini and GPT-4o read the image and decide instantly whether the task was genuinely completed. No faking. No loopholes." },
-  { icon: "account_balance_wallet", title: "Real-time Balance Drain", desc: "The moment your child opens a social media app, their balance starts dropping in real time. Every second costs money. They can watch it happen — and so can you." },
-  { icon: "photo_camera",        title: "Parent Photo Review",       desc: "Every photo your child submits is stored and viewable from your dashboard. You can review, approve, or reject any submission before balance is restored." },
-  { icon: "notifications_active", title: "Instant Parent Alerts",    desc: "Get notified the moment your child submits a task that requires your approval. No delays. You stay informed without hovering." },
-  { icon: "edit_note",           title: "Custom Tasks",              desc: "Create any task you want — make your bed, walk the dog, read for 20 minutes. Set your own reward amount. Full flexibility for every family." },
-  { icon: "tune",                title: "Per-App Rates",             desc: "TikTok costs more than YouTube in your house? That's your call. Set a custom rate per minute for every social media app your child uses." },
-  { icon: "bar_chart",           title: "Weekly Reports",            desc: "Every Sunday, get a full breakdown of where your child spent their time and money. See which apps cost the most and which tasks they completed." },
-  { icon: "lock",                title: "Auto Lock",                 desc: "When the balance hits zero, social media locks automatically. No manual intervention needed. The system enforces the rules so you don't have to." },
-];
-
-function FeatureSlideshow() {
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setActive((prev) => (prev + 1) % features.length), 3500);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <section className="border-y" style={{ backgroundColor: "#f1f3ff", borderColor: "#e1e8ff" }}>
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-wider mb-3" style={{ ...Mono, color: "#737685" }}>Features</p>
-          <h2 className="font-black text-4xl sm:text-5xl" style={{ ...HG, color: "#051a3e" }}>
-            Everything you need.<br />Nothing you don&apos;t.
-          </h2>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Tabs */}
-          <div className="flex flex-col gap-1.5 lg:w-64 flex-shrink-0">
-            {features.map((f, i) => (
-              <button key={i} onClick={() => setActive(i)}
-                className="text-left px-4 py-3 rounded-xl border transition-all flex items-center gap-2.5"
-                style={{
-                  backgroundColor: active === i ? "#003d9b" : "#ffffff",
-                  borderColor: active === i ? "#003d9b" : "#e1e8ff",
-                  color: active === i ? "#ffffff" : "#434654",
-                  fontWeight: active === i ? 700 : 400,
-                }}>
-                <span className="material-symbols-outlined text-lg flex-shrink-0" style={{ fontVariationSettings: active === i ? "'FILL' 1" : "'FILL' 0" }}>{f.icon}</span>
-                <span className="text-sm">{f.title}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Active panel */}
-          <div className="flex-1 glass-card rounded-2xl p-10 min-h-64 flex flex-col justify-center">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: "#e9edff" }}>
-              <span className="material-symbols-outlined text-3xl" style={{ color: "#003d9b", fontVariationSettings: "'FILL' 1" }}>{features[active].icon}</span>
-            </div>
-            <h3 className="font-black text-3xl mb-4" style={{ ...HG, color: "#051a3e" }}>{features[active].title}</h3>
-            <p className="text-lg leading-relaxed" style={{ color: "#434654" }}>{features[active].desc}</p>
-            <div className="flex items-center gap-2 mt-8">
-              {features.map((_, i) => (
-                <button key={i} onClick={() => setActive(i)} className="rounded-full transition-all"
-                  style={{ width: active === i ? 24 : 8, height: 8, backgroundColor: active === i ? "#003d9b" : "#c3c6d6" }} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function Home() {
-  const [currentApp, setCurrentApp] = useState(0);
-  const [balance, setBalance] = useState(20.00);
-  const [ticking, setTicking] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const t = setInterval(() => setCurrentApp((prev) => (prev + 1) % apps.length), 2000);
-    return () => clearInterval(t);
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  useEffect(() => {
-    if (!ticking) return;
-    const t = setInterval(() => {
-      setBalance((prev) => { if (prev <= 0) { setTicking(false); return 0; } return Math.max(0, +(prev - 0.01).toFixed(2)); });
-    }, 80);
-    return () => clearInterval(t);
-  }, [ticking]);
+  const features = [
+    { icon: "phone_iphone", title: "Live Screen Tracking", desc: "Every minute on TikTok, Instagram, YouTube drains their balance in real time.", color: "#ba1a1a", bg: "#fff0f0" },
+    { icon: "auto_awesome", title: "AI Task Verification", desc: "Take a photo of homework or chores. Gemini & GPT-4o grade it instantly — no faking.", color: "#0052cc", bg: "#deecff" },
+    { icon: "account_balance_wallet", title: "Real Money Budget", desc: "Set a weekly budget. They can earn it back, lose it, or learn to save it.", color: "#006e2a", bg: "#e8f5e9" },
+    { icon: "shield_person", title: "Parent Controls", desc: "Approve tasks, set budgets, review AI verdicts. You're always in control.", color: "#6554c0", bg: "#ecdfff" },
+  ];
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "#faf9ff", color: "#051a3e" }}>
+    <main style={{ backgroundColor: "#faf9ff", minHeight: "100dvh" }}>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b" style={{ backgroundColor: "rgba(250,249,255,0.95)", backdropFilter: "blur(20px)", borderColor: "#e1e8ff" }}>
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm" style={{ backgroundColor: "#003d9b", color: "#ffffff" }}>R</div>
-              <span className="font-black text-base" style={{ ...HG, color: "#003d9b" }}>Redefine</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-6">
-              {["How it works", "Features", "Pricing"].map((item) => (
-                <a key={item} href={`#${item.toLowerCase().replace(/ /g, "-")}`} className="text-sm transition hover:opacity-70" style={{ color: "#434654" }}>{item}</a>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/parent/login" className="text-sm font-medium" style={{ color: "#434654" }}>Sign in</Link>
-            <Link href="/parent/signup" className="text-sm font-black px-5 py-2.5 rounded-xl transition-all active:scale-95 flex items-center gap-1.5"
-              style={{ backgroundColor: "#003d9b", color: "#ffffff", ...HG }}>
-              Get Started
-              <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </Link>
-          </div>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? "rgba(250,249,255,0.92)" : "transparent", backdropFilter: scrolled ? "blur(20px)" : "none", borderBottom: scrolled ? "1px solid #e1e8ff" : "none", transition: "all 0.2s", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="font-display" style={{ width: 36, height: 36, borderRadius: 10, background: "#0052cc", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16 }}>R</div>
+          <span className="font-display" style={{ fontWeight: 900, fontSize: 18, color: "#0052cc" }}>Redefine</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Link href="/parent/login" style={{ fontSize: 14, fontWeight: 600, color: "#434654", textDecoration: "none", padding: "8px 14px", borderRadius: 10, background: "rgba(0,0,0,0.04)" }}>Log in</Link>
+          <Link href="/parent/signup" className="font-display" style={{ fontSize: 14, fontWeight: 800, color: "#fff", textDecoration: "none", padding: "10px 18px", borderRadius: 12, background: "#0052cc" }}>Get started</Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
+      <section style={{ paddingTop: 100, paddingBottom: 60, paddingLeft: 24, paddingRight: 24, maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "#fff0f0", border: "1px solid #ffcdd2", marginBottom: 20 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ba1a1a" }} />
+          <span className="font-mono" style={{ fontSize: 12, color: "#ba1a1a", fontWeight: 500 }}>Screen time is draining their balance right now</span>
+        </div>
 
-          {/* Left copy */}
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider mb-6"
-              style={{ ...Mono, backgroundColor: "#e9edff", borderColor: "#c4d2ff", color: "#003d9b" }}>
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-              Trusted by 10,000+ families
-            </div>
+        <h1 className="font-display" style={{ fontSize: 48, fontWeight: 900, color: "#051a3e", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+          Screen time costs<br />
+          <span style={{ color: "#0052cc" }}>real money.</span>
+        </h1>
+        <p style={{ fontSize: 17, color: "#434654", margin: "0 0 32px", lineHeight: 1.6 }}>
+          Redefine turns social media into a learning moment. Kids earn screen time by completing real tasks, verified by AI.
+        </p>
 
-            <h1 className="font-black text-5xl sm:text-6xl leading-tight mb-6" style={{ ...HG, color: "#051a3e" }}>
-              The only app that makes
-              <br />
-              <span style={{ color: "#003d9b" }}>screen time</span>
-              <br />
-              cost something real.
-            </h1>
-
-            <p className="text-lg leading-relaxed mb-8 max-w-lg" style={{ color: "#434654" }}>
-              Redefine automatically charges kids from their allowance for every minute on social media — and lets them earn it back through real tasks, verified by AI. No arguments. No negotiations.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Link href="/parent/signup"
-                className="font-black px-7 py-3.5 rounded-xl transition-all active:scale-95 text-sm flex items-center gap-2"
-                style={{ backgroundColor: "#003d9b", color: "#ffffff", ...HG }}>
-                Start Free Today
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
-              </Link>
-              <Link href="/kid/login"
-                className="font-bold px-7 py-3.5 rounded-xl border text-sm transition-all"
-                style={{ borderColor: "#c3c6d6", color: "#434654" }}>
-                I&apos;m a kid
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: "#737685" }}>
-              {["Free plan available", "No credit card required", "Setup in 2 mins"].map((item) => (
-                <div key={item} className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-base" style={{ color: "#006e2a", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Live demo card */}
-          <div className="flex-1 w-full max-w-sm">
-            <div className="glass-card rounded-2xl overflow-hidden">
-
-              {/* Card header */}
-              <div className="px-6 py-5 relative overflow-hidden" style={{ backgroundColor: "#003d9b" }}>
-                <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
-                <div className="relative z-10 flex justify-between items-start">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider mb-1" style={{ ...Mono, color: "rgba(255,255,255,0.5)" }}>Jake&apos;s Balance</p>
-                    <p className="font-black text-5xl tabular-nums" style={{ ...HG, color: balance < 5 ? "#ff6b6b" : balance < 10 ? "#ffd166" : "#ffffff" }}>
-                      ${balance.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs uppercase tracking-wider mb-1" style={{ ...Mono, color: "rgba(255,255,255,0.5)" }}>Budget</p>
-                    <p className="font-black text-xl" style={{ ...HG, color: "#ffffff" }}>$20.00</p>
-                  </div>
-                </div>
-                <div className="mt-4 w-full rounded-full h-1.5" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-                  <div className="h-1.5 rounded-full transition-all duration-100" style={{
-                    width: `${(balance / 20) * 100}%`,
-                    backgroundColor: balance < 5 ? "#ff6b6b" : balance < 10 ? "#ffd166" : "#69ff87",
-                  }} />
-                </div>
-              </div>
-
-              {/* Live status */}
-              <div className="px-5 py-3 flex items-center justify-between border-b" style={{ borderColor: "#e1e8ff" }}>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: ticking ? "#ba1a1a" : "#006e2a" }} />
-                  <p className="text-sm font-bold" style={{ color: "#051a3e" }}>
-                    {ticking ? `Active on ${apps[currentApp]}` : "Social media locked"}
-                  </p>
-                </div>
-                <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ ...Mono, backgroundColor: ticking ? "#fff0f0" : "#f0fff4", color: ticking ? "#ba1a1a" : "#006e2a" }}>
-                  {ticking ? "−$0.10/min" : "Balance empty"}
-                </span>
-              </div>
-
-              {/* Tasks */}
-              <div className="px-5 py-4" style={{ backgroundColor: "#f1f3ff" }}>
-                <p className="text-xs uppercase tracking-wider mb-3" style={{ ...Mono, color: "#737685" }}>Tasks to earn back</p>
-                {[
-                  { name: "Make your bed", reward: "$1.00", done: true, icon: "cleaning_services" },
-                  { name: "Do homework",   reward: "$2.00", done: false, icon: "menu_book" },
-                  { name: "Take out trash", reward: "$1.50", done: false, icon: "delete" },
-                ].map((task, i) => (
-                  <div key={i} className="flex items-center justify-between py-2.5 border-b last:border-0" style={{ borderColor: "#e1e8ff" }}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: task.done ? "#003d9b" : "transparent", borderColor: task.done ? "#003d9b" : "#c3c6d6" }}>
-                        {task.done && <span className="material-symbols-outlined text-xs text-white" style={{ fontSize: 12, fontVariationSettings: "'FILL' 1" }}>check</span>}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-sm" style={{ color: task.done ? "#c3c6d6" : "#434654" }}>{task.icon}</span>
-                        <span className="text-sm" style={{ color: task.done ? "#c3c6d6" : "#051a3e", textDecoration: task.done ? "line-through" : "none" }}>{task.name}</span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-black" style={{ ...HG, color: task.done ? "#c3c6d6" : "#006e2a" }}>{task.reward}</span>
-                  </div>
-                ))}
-              </div>
-
-              {!ticking && (
-                <div className="px-5 py-3 border-t" style={{ borderColor: "#e1e8ff" }}>
-                  <button onClick={() => { setBalance(20.00); setTicking(true); }}
-                    className="w-full text-sm font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
-                    style={{ backgroundColor: "#e9edff", color: "#003d9b", ...HG }}>
-                    <span className="material-symbols-outlined text-base">refresh</span>
-                    Reset Demo
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Social proof */}
-            <div className="flex items-center gap-3 mt-4 px-2">
-              <div className="flex -space-x-2">
-                {["#003d9b", "#006e2a", "#6b54a2", "#b45309"].map((c, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-black"
-                    style={{ backgroundColor: c, borderColor: "#faf9ff", color: "#ffffff", ...HG }}>
-                    {["S","M","J","K"][i]}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs" style={{ color: "#737685" }}>
-                <span className="font-bold" style={{ color: "#051a3e" }}>2,400+</span> parents joined this week
-              </p>
-            </div>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Link href="/parent/signup" className="font-display" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "18px 0", borderRadius: 16, background: "#0052cc", color: "#fff", fontWeight: 900, fontSize: 17, textDecoration: "none" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>rocket_launch</span>
+            Set up free in 2 minutes
+          </Link>
+          <Link href="/kid/login" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "16px 0", borderRadius: 16, border: "1.5px solid #e1e8ff", background: "#fff", color: "#434654", fontWeight: 600, fontSize: 15, textDecoration: "none" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>face</span>
+            I&apos;m a kid — log in
+          </Link>
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="border-y" style={{ backgroundColor: "#003d9b", borderColor: "#0040a2" }}>
-        <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-3 gap-8 text-center">
-          {[
-            { value: "4.2 hrs", label: "Average teen daily screen time" },
-            { value: "73%",     label: "Of kids reduce usage in week 1" },
-            { value: "10,000+", label: "Families using Redefine" },
-          ].map((stat, i) => (
-            <div key={i}>
-              <p className="font-black text-3xl mb-1" style={{ ...HG, color: "#69ff87" }}>{stat.value}</p>
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>{stat.label}</p>
+      {/* Live demo card */}
+      <section style={{ padding: "0 20px 48px", maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ background: "#051a3e", borderRadius: 24, padding: 24, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", right: -40, bottom: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff6b6b" }} />
+              <span className="font-mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Live · Jake&apos;s balance</span>
             </div>
-          ))}
+            <p className="font-display" style={{ fontSize: 62, fontWeight: 900, color: "#ffd166", margin: "0 0 4px", lineHeight: 1, letterSpacing: "-0.03em" }}>$7.40</p>
+            <p className="font-mono" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 20 }}>draining $0.10/min on TikTok</p>
+            <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", display: "flex", gap: 10, alignItems: "center" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#69ff87" }}>task_alt</span>
+              <div>
+                <p className="font-display" style={{ fontSize: 14, fontWeight: 700, color: "#fff", margin: 0 }}>Homework verified by Gemini AI</p>
+                <p className="font-mono" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: 0 }}>+$5.00 added · 20/20 questions correct</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-wider mb-3" style={{ ...Mono, color: "#737685" }}>How it works</p>
-          <h2 className="font-black text-4xl sm:text-5xl" style={{ ...HG, color: "#051a3e" }}>
-            Simple for parents.<br />Effective for kids.
-          </h2>
-        </div>
+      <section style={{ padding: "0 20px 48px", maxWidth: 480, margin: "0 auto" }}>
+        <p className="font-mono" style={{ fontSize: 11, color: "#737685", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>How it works</p>
+        <h2 className="font-display" style={{ fontSize: 32, fontWeight: 900, color: "#051a3e", margin: "0 0 24px", letterSpacing: "-0.02em" }}>Three simple steps</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {[
-            { icon: "tune",                 step: "01", title: "You set the rules",            color: "#003d9b", bg: "#e9edff", desc: "Choose how much each social media app costs per minute. Set a weekly budget. Full control. Takes less than 2 minutes to get started." },
-            { icon: "account_balance_wallet", step: "02", title: "Balance drains automatically", color: "#ba1a1a", bg: "#fff0f0", desc: "Every second on social media costs real money. No alerts, no warnings — just a balance that drops in real time. When it hits zero, social media locks." },
-            { icon: "camera_alt",           step: "03", title: "Kids earn it back",            color: "#006e2a", bg: "#f0fff4", desc: "Your child completes tasks you set. They take a photo as proof. AI verifies it instantly. Balance is restored. Responsibility built naturally." },
-          ].map((item, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: item.bg }}>
-                  <span className="material-symbols-outlined text-2xl" style={{ color: item.color, fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+            { n: "01", icon: "settings", title: "Parent sets up", desc: "Create an account, add your kid, set a weekly budget and screen time cost per minute.", color: "#0052cc" },
+            { n: "02", icon: "assignment_turned_in", title: "Kid completes tasks", desc: "Your child takes a photo of finished homework or chores. AI verifies it immediately.", color: "#006e2a" },
+            { n: "03", icon: "savings", title: "Balance grows", desc: "Approved tasks add money back. Screen time drains it. Real consequences, real learning.", color: "#6554c0" },
+          ].map(step => (
+            <div key={step.n} className="glass-card" style={{ borderRadius: 18, padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
+              <div style={{ flexShrink: 0 }}>
+                <p className="font-mono" style={{ fontSize: 11, color: step.color, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{step.n}</p>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: step.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#fff", fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
                 </div>
-                <span className="font-black text-3xl" style={{ ...HG, color: "#e1e8ff" }}>{item.step}</span>
               </div>
-              <h3 className="font-black text-lg mb-3" style={{ ...HG, color: "#051a3e" }}>{item.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#434654" }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features slideshow */}
-      <FeatureSlideshow />
-
-      {/* Testimonials */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-wider mb-3" style={{ ...Mono, color: "#737685" }}>Testimonials</p>
-          <h2 className="font-black text-4xl sm:text-5xl" style={{ ...HG, color: "#051a3e" }}>Parents love it.</h2>
-          <p className="mt-3 text-lg" style={{ color: "#434654" }}>Real families. Real results.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {[
-            { name: "Sarah M.", role: "Mom of 2", text: "My son went from 6 hours of TikTok a day to 45 minutes. He did it himself once he saw his balance dropping. Best $9.99 I ever spent." },
-            { name: "David K.", role: "Dad of 3", text: "The AI task verification is brilliant. My kids can't cheat it. They actually clean their rooms now because they WANT their balance back." },
-            { name: "Rachel T.", role: "Mom of 1", text: "I've tried every screen time app. Redefine is the only one that actually works because it's connected to something kids actually care about — money." },
-          ].map((review, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, j) => (
-                  <span key={j} className="material-symbols-outlined text-lg" style={{ color: "#b45309", fontVariationSettings: "'FILL' 1" }}>star</span>
-                ))}
-              </div>
-              <p className="text-sm leading-relaxed mb-5" style={{ color: "#434654" }}>&ldquo;{review.text}&rdquo;</p>
-              <div className="flex items-center gap-3 border-t pt-4" style={{ borderColor: "#e1e8ff" }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs" style={{ backgroundColor: "#e9edff", color: "#003d9b", ...HG }}>
-                  {review.name[0]}
-                </div>
-                <div>
-                  <p className="text-sm font-bold" style={{ color: "#051a3e" }}>{review.name}</p>
-                  <p className="text-xs" style={{ ...Mono, color: "#737685" }}>{review.role}</p>
-                </div>
+              <div>
+                <p className="font-display" style={{ fontSize: 17, fontWeight: 800, color: "#051a3e", margin: "0 0 6px" }}>{step.title}</p>
+                <p style={{ fontSize: 14, color: "#434654", margin: 0, lineHeight: 1.5 }}>{step.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="border-y" style={{ backgroundColor: "#f1f3ff", borderColor: "#e1e8ff" }}>
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-wider mb-3" style={{ ...Mono, color: "#737685" }}>Pricing</p>
-            <h2 className="font-black text-4xl sm:text-5xl" style={{ ...HG, color: "#051a3e" }}>Start free.<br />Upgrade anytime.</h2>
-            <p className="mt-3 text-lg" style={{ color: "#434654" }}>No credit card required to get started.</p>
-          </div>
+      {/* Features */}
+      <section style={{ padding: "0 20px 48px", maxWidth: 480, margin: "0 auto" }}>
+        <p className="font-mono" style={{ fontSize: 11, color: "#737685", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Features</p>
+        <h2 className="font-display" style={{ fontSize: 32, fontWeight: 900, color: "#051a3e", margin: "0 0 24px", letterSpacing: "-0.02em" }}>Everything you need</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
-            {/* Free */}
-            <div className="glass-card rounded-2xl p-8">
-              <p className="text-xs uppercase tracking-wider mb-2" style={{ ...Mono, color: "#737685" }}>Free</p>
-              <p className="font-black text-5xl mb-1" style={{ ...HG, color: "#051a3e" }}>$0</p>
-              <p className="text-sm mb-6" style={{ color: "#737685" }}>Forever free</p>
-              <div className="h-px mb-6" style={{ backgroundColor: "#e1e8ff" }} />
-              <ul className="flex flex-col gap-3 mb-8">
-                {["1 child account", "All core features", "AI task verification", "Weekly reports", "Per-app rate setting"].map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm" style={{ color: "#434654" }}>
-                    <span className="material-symbols-outlined text-base" style={{ color: "#006e2a", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/parent/signup" className="block text-center font-bold py-3 rounded-xl border text-sm transition-all hover:opacity-80"
-                style={{ borderColor: "#c3c6d6", color: "#051a3e" }}>
-                Get started free
-              </Link>
-            </div>
-
-            {/* Pro */}
-            <div className="rounded-2xl p-8 relative overflow-hidden" style={{ backgroundColor: "#003d9b" }}>
-              <div className="absolute top-4 right-4 text-xs font-black px-3 py-1 rounded-full" style={{ ...Mono, backgroundColor: "#69ff87", color: "#003d9b" }}>
-                POPULAR
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {features.map(f => (
+            <div key={f.title} className="glass-card" style={{ borderRadius: 18, padding: 18 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: f.bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22, color: f.color, fontVariationSettings: "'FILL' 1" }}>{f.icon}</span>
               </div>
-              <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
-              <div className="relative z-10">
-                <p className="text-xs uppercase tracking-wider mb-2" style={{ ...Mono, color: "rgba(255,255,255,0.5)" }}>Pro</p>
-                <p className="font-black text-5xl mb-1" style={{ ...HG, color: "#ffffff" }}>$9.99</p>
-                <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>per month · cancel anytime</p>
-                <div className="h-px mb-6" style={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
-                <ul className="flex flex-col gap-3 mb-8">
-                  {["Up to 5 children", "Everything in Free", "Custom task templates", "Instant parent alerts", "Chrome extension (coming soon)", "Priority support"].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-                      <span className="material-symbols-outlined text-base" style={{ color: "#69ff87", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/parent/signup" className="block text-center font-black py-3 rounded-xl text-sm transition-all active:scale-[0.98]"
-                  style={{ backgroundColor: "#69ff87", color: "#003d9b", ...HG }}>
-                  Start free trial →
-                </Link>
+              <p className="font-display" style={{ fontSize: 15, fontWeight: 800, color: "#051a3e", margin: "0 0 6px", lineHeight: 1.2 }}>{f.title}</p>
+              <p style={{ fontSize: 13, color: "#434654", margin: 0, lineHeight: 1.5 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* AI badge */}
+      <section style={{ padding: "0 20px 48px", maxWidth: 480, margin: "0 auto" }}>
+        <div className="glass-card" style={{ borderRadius: 20, padding: 20 }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: "#deecff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 24, color: "#0052cc", fontVariationSettings: "'FILL' 1" }}>psychology</span>
+            </div>
+            <div>
+              <p className="font-display" style={{ fontSize: 18, fontWeight: 900, color: "#051a3e", margin: "0 0 6px" }}>Powered by Gemini + GPT-4o</p>
+              <p style={{ fontSize: 14, color: "#434654", margin: "0 0 12px", lineHeight: 1.5 }}>Homework is graded by Google Gemini. Chores and exercise are verified by OpenAI GPT-4o. Two AIs, zero excuses.</p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <span className="font-mono" style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "#e8f0ff", color: "#0052cc", fontWeight: 500 }}>Google Gemini</span>
+                <span className="font-mono" style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "#e8f5e9", color: "#006e2a", fontWeight: 500 }}>OpenAI GPT-4o</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section style={{ backgroundColor: "#003d9b" }}>
-        <div className="max-w-6xl mx-auto px-6 py-24 text-center">
-          <p className="text-xs uppercase tracking-wider mb-4" style={{ ...Mono, color: "rgba(255,255,255,0.5)" }}>Get started today</p>
-          <h2 className="font-black text-4xl sm:text-5xl mb-4" style={{ ...HG, color: "#ffffff" }}>
-            Ready to redefine<br />
-            <span style={{ color: "#69ff87" }}>screen time?</span>
-          </h2>
-          <p className="text-lg mb-10 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Join thousands of families who have already taken back control. Free to start. No credit card needed.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/parent/signup"
-              className="font-black px-8 py-4 rounded-xl transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
-              style={{ backgroundColor: "#69ff87", color: "#003d9b", ...HG }}>
-              Create Free Account
-              <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </Link>
-            <Link href="/kid/login"
-              className="font-bold px-8 py-4 rounded-xl border text-sm transition-all"
-              style={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)" }}>
-              I&apos;m a kid — Sign in
-            </Link>
-          </div>
+      {/* CTA */}
+      <section style={{ padding: "0 20px 60px", maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ background: "#0052cc", borderRadius: 24, padding: "32px 24px", textAlign: "center" }}>
+          <p className="font-display" style={{ fontSize: 32, fontWeight: 900, color: "#fff", margin: "0 0 10px", lineHeight: 1.2, letterSpacing: "-0.02em" }}>Start for free today</p>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", margin: "0 0 24px" }}>No credit card. No app to install. Just a smarter way to parent.</p>
+          <Link href="/parent/signup" className="font-display" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "18px 0", borderRadius: 16, background: "#fff", color: "#0052cc", fontWeight: 900, fontSize: 17, textDecoration: "none" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>rocket_launch</span>
+            Create free account
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t" style={{ backgroundColor: "#faf9ff", borderColor: "#e1e8ff" }}>
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs" style={{ backgroundColor: "#003d9b", color: "#ffffff" }}>R</div>
-            <span className="font-black text-sm" style={{ ...HG, color: "#003d9b" }}>Redefine</span>
-          </div>
-          <div className="flex items-center gap-6 text-xs" style={{ color: "#737685" }}>
-            {["Privacy Policy", "Terms of Service", "Contact"].map((link) => (
-              <a key={link} href="#" className="hover:underline">{link}</a>
-            ))}
-          </div>
-          <span className="text-xs" style={{ ...Mono, color: "#737685" }}>© 2026 Redefine</span>
+      <footer style={{ borderTop: "1px solid #e1e8ff", padding: "24px 20px", textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
+          <div className="font-display" style={{ width: 28, height: 28, borderRadius: 8, background: "#0052cc", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13 }}>R</div>
+          <span className="font-display" style={{ fontWeight: 800, fontSize: 15, color: "#0052cc" }}>Redefine</span>
+        </div>
+        <p style={{ fontSize: 13, color: "#737685", margin: "0 0 12px" }}>Every minute on social media costs real money.</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 20 }}>
+          <Link href="/parent/login" style={{ fontSize: 13, color: "#737685", textDecoration: "none" }}>Parent Login</Link>
+          <Link href="/kid/login" style={{ fontSize: 13, color: "#737685", textDecoration: "none" }}>Kid Login</Link>
+          <Link href="/parent/signup" style={{ fontSize: 13, color: "#737685", textDecoration: "none" }}>Sign Up</Link>
         </div>
       </footer>
     </main>
